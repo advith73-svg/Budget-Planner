@@ -27,12 +27,13 @@ const AddExpenseForm = ({ budgets }) => {
   return (
     <div className="form-wrapper">
       <h2 className="h3">
-        Add {""}
+        Add{" "}
         <span className="accent">
           <i>{budgets.length === 1 && `${budgets.map((budg) => budg.name)}`}</i>
         </span>{" "}
         Expense
       </h2>
+
       <fetcher.Form method="post" className="grid-sm" ref={formRef}>
         <div className="expense-inputs">
           <div className="grid-xs">
@@ -46,6 +47,7 @@ const AddExpenseForm = ({ budgets }) => {
               required
             />
           </div>
+
           <div className="expense-inputab">
             <div className="grid-xs">
               <label htmlFor="newExpenseAmount">Amount</label>
@@ -59,6 +61,23 @@ const AddExpenseForm = ({ budgets }) => {
                 required
               />
             </div>
+
+            {/* 🔹 NEW: Expense Category */}
+            <div className="grid-xs">
+              <label htmlFor="newExpenseCategory">Expense Type</label>
+              <select
+                name="newExpenseCategory"
+                id="newExpenseCategory"
+                required
+              >
+                <option value="Food">Food</option>
+                <option value="Travel">Travel</option>
+                <option value="Bills">Bills</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
             <div className="grid-xs" hidden={budgets.length === 1}>
               <label htmlFor="newExpenseBudget">Budget Category</label>
               <select name="newExpenseBudget" id="newExpenseBudget" required>
@@ -75,7 +94,9 @@ const AddExpenseForm = ({ budgets }) => {
             </div>
           </div>
         </div>
+
         <input type="hidden" name="_action" value="createExpense" />
+
         <button type="submit" className="btn btn--dark" disabled={isSubmitting}>
           {isSubmitting ? (
             <span>Submitting…</span>
@@ -90,4 +111,5 @@ const AddExpenseForm = ({ budgets }) => {
     </div>
   );
 };
+
 export default AddExpenseForm;

@@ -1,4 +1,5 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 // Library
 import { ToastContainer } from "react-toastify";
@@ -65,9 +66,54 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
+  // 🔹 Read expenses from localStorage for analytics & export
+  const [expenses, setExpenses] = useState([]);
+
+  useEffect(() => {
+    const storedExpenses = JSON.parse(localStorage.getItem("expenses")) || [];
+    setExpenses(storedExpenses);
+  }, []);
+
+  // 🔹 Monthly total calculation (analytics)
+  const totalExpenses = expenses.reduce(
+    (total, expense) => total + expense.amount,
+    0
+  );
+
+  // 🔹 CSV Export Function (Functional Feature)
+  function exportExpensesCSV() {
+    if (expenses.length === 0) return;
+
+    const headers = "Description,Amount,Category\n";
+    const rows = expenses
+      .map(
+        (e) =>
+          `${e.description},${e.amount},${e.category || "Uncategorized"}`
+      )
+      .join("\n");
+
+    const blob = new Blob([headers + rows], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "expenses.csv";
+    link.click();
+  }
+
   return (
     <div className="App">
       <RouterProvider router={router} />
+
+      {/* 🔹 Simple global analytics & export */}
+      <div style={{ textAlign: "center", marginTop: "1rem" }}>
+        <strong>Total Expenses:</strong> ₹{totalExpenses}
+        <br />
+        <button onClick={exportExpensesCSV} style={{ marginTop: "0.5rem" }}>
+          Export Expenses (CSV)
+        </button>
+      </div>
+
       <ToastContainer />
       <Footer />
     </div>

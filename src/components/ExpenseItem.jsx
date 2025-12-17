@@ -1,11 +1,16 @@
 // rrd imports
 import { Link, useFetcher } from "react-router-dom";
 
-import { useState } from 'react';
+import { useState } from "react";
 import { toast } from "react-toastify";
 
 // library import
-import { TrashIcon, PencilIcon, CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
+import {
+  TrashIcon,
+  PencilIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+} from "@heroicons/react/24/solid";
 
 // helper imports
 import {
@@ -18,9 +23,14 @@ import {
 const ExpenseItem = ({ expense, showBudget }) => {
   const fetcher = useFetcher();
   const [editing, setEditing] = useState(false);
-  const [editedExpense, setEditedExpense] = useState({ ...expense });
 
-  // fetche a budget that matches the budgetId of the expense.
+  // ensure backward compatibility
+  const [editedExpense, setEditedExpense] = useState({
+    ...expense,
+    category: expense.category || "Other",
+  });
+
+  // fetch the matching budget
   const budget = getAllMatchingItems({
     category: "budgets",
     key: "id",
@@ -30,37 +40,44 @@ const ExpenseItem = ({ expense, showBudget }) => {
   const handleEditClick = () => {
     setEditing(true);
   };
-  
+
   const handleEditCancel = () => {
     setEditing(false);
+    setEditedExpense({ ...expense, category: expense.category || "Other" });
   };
 
   const handleEditSubmit = async () => {
     try {
       updateExpense(expense.id, editedExpense);
-      toast.success('Expense updated successfully');
-      toast.success('Please Refresh the Page');
+      toast.success("Expense updated successfully");
+      toast.info("Please refresh the page to see changes");
       setEditing(false);
     } catch (error) {
-      toast.error('Error updating expense');
+      toast.error("Error updating expense");
     }
   };
 
   return (
     <>
+      {/* Expense Name */}
       <td>
         {editing ? (
           <input
             type="text"
             value={editedExpense.name}
             onChange={(e) =>
-              setEditedExpense((prev) => ({ ...prev, name: e.target.value }))
+              setEditedExpense((prev) => ({
+                ...prev,
+                name: e.target.value,
+              }))
             }
           />
         ) : (
           expense.name
         )}
       </td>
+
+      {/* Amount */}
       <td>
         {editing ? (
           <input
@@ -68,19 +85,51 @@ const ExpenseItem = ({ expense, showBudget }) => {
             step="1"
             value={editedExpense.amount}
             onChange={(e) =>
-              setEditedExpense((prev) => ({ ...prev, amount: +e.target.value }))
+              setEditedExpense((prev) => ({
+                ...prev,
+                amount: +e.target.value,
+              }))
             }
           />
         ) : (
           formatCurrency(expense.amount)
         )}
       </td>
+
+      {/* NEW: Category */}
+      <td>
+        {editing ? (
+          <select
+            value={editedExpense.category}
+            onChange={(e) =>
+              setEditedExpense((prev) => ({
+                ...prev,
+                category: e.target.value,
+              }))
+            }
+          >
+            <option value="Food">Food</option>
+            <option value="Travel">Travel</option>
+            <option value="Bills">Bills</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Other">Other</option>
+          </select>
+        ) : (
+          <span>{expense.category || "Other"}</span>
+        )}
+      </td>
+
+      {/* Date */}
       <td>{formatDateToLocaleString(expense.createdAt)}</td>
+
+      {/* Budget */}
       {showBudget && (
         <td>
           <Link to={`/budget/${budget.id}`}>{budget.name}</Link>
         </td>
       )}
+
+      {/* Edit buttons */}
       <td>
         {editing ? (
           <div className="edit-form-buttons">
@@ -99,9 +148,8 @@ const ExpenseItem = ({ expense, showBudget }) => {
           </div>
         )}
       </td>
-      {/* <td>{expense.name}</td> <td> - table cells */}
-      {/* <td>{formatCurrency(expense.amount)}</td> */}
-      
+
+      {/* Delete */}
       <td>
         <fetcher.Form method="post">
           <input type="hidden" name="_action" value="deleteExpense" />
@@ -118,4 +166,5 @@ const ExpenseItem = ({ expense, showBudget }) => {
     </>
   );
 };
+
 export default ExpenseItem;
